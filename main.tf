@@ -74,7 +74,7 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 }
 
 resource "aws_iam_role" "codebuild_role" {
-  name = "CodeBuildRole"
+  name = "pipeline-ec2-tarea"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
