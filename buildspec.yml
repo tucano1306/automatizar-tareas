@@ -11,6 +11,8 @@ phases:
 
   pre_build:
     commands:
+      - echo "Creando archivo ZIP para la función Lambda"
+      - zip lambda_function_payload.zip lambda_function.py
       - echo "Iniciando Terraform"
       - terraform init
 
