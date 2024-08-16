@@ -44,6 +44,48 @@ resource "aws_iam_role_policy" "lambda_ec2_policy" {
   })
 }
 
+resource "aws_iam_role_policy" "iam_permissions_policy" {
+  name = "iam_permissions_policy"
+  role = aws_iam_role.lambda_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:CreateRole",
+          "iam:AttachRolePolicy",
+          "iam:PutRolePolicy",
+          "iam:PassRole"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "eventbridge_permissions_policy" {
+  name = "eventbridge_permissions_policy"
+  role = aws_iam_role.lambda_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "events:PutRule",
+          "events:PutTargets",
+          "events:DescribeRule",
+          "events:ListTargetsByRule"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "ec2_automation" {
   filename         = "lambda_function_payload.zip"
   function_name    = "ec2_automation"
