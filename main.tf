@@ -1,12 +1,7 @@
 variable "aws_region" {
   description = "The AWS region to deploy resources in"
-  default     = "us-east-1"
-}
+  }
 
-variable "schedule_expression" {
-  description = "The schedule expression for the EventBridge rule"
-  default     = "rate(5 minutes)"
-}
 
 provider "aws" {
   region = var.aws_region
