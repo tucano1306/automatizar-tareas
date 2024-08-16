@@ -12,7 +12,6 @@ phases:
   pre_build:
     commands:
       - echo "Iniciando Terraform"
-      - cd terraform  # Cambia al directorio donde están los archivos .tf
       - terraform init
 
   build:
