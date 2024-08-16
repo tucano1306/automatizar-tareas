@@ -90,60 +90,6 @@ resource "aws_iam_role" "codebuild_role" {
   })
 }
 
-resource "aws_iam_role_policy" "codebuild_policy" {
-  name = "CodeBuildPolicy"
-
-  role = aws_iam_role.codebuild_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "codebuild:StartBuild",
-          "codebuild:BatchGetBuilds",
-          "codebuild:BatchGetProjects"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "iam:CreateRole",
-          "iam:AttachRolePolicy",
-          "iam:PutRolePolicy",
-          "iam:PassRole"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "events:PutRule",
-          "events:PutTargets",
-          "events:DescribeRule",
-          "events:ListTargetsByRule"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
+resource "aws_iam_role_policy_attachment" "codebuild_administrator_access" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
