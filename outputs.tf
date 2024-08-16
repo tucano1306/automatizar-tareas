@@ -1,6 +1,6 @@
 output "lambda_function_name" {
   description = "The name of the Lambda function"
-  value       = aws_lambda_function.ec2_automation.function_name
+  value       = aws_lambda_function.funcion_ec2_tarea.function_name
 }
 
 output "cloudwatch_event_rule_name" {
