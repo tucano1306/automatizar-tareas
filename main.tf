@@ -93,3 +93,4 @@ resource "aws_iam_role" "codebuild_role" {
 resource "aws_iam_role_policy_attachment" "codebuild_administrator_access" {
   role       = aws_iam_role.codebuild_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
