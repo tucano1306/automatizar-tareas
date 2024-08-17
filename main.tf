@@ -1,23 +1,3 @@
-variable "aws_region" {
-  description = "The AWS region to deploy resources in"
-  default     = "us-east-1"
-}
-
-variable "schedule_expression" {
-  description = "The schedule expression for the EventBridge rule"
-  default     = "rate(5 minutes)"
-}
-
-variable "create_roles" {
-  description = "Whether to create IAM roles"
-  default     = false
-}
-
-variable "github_oauth_token" {
-  description = "GitHub OAuth token for accessing the repository"
-  type        = string
-}
-
 provider "aws" {
   region = var.aws_region
 }
