@@ -160,6 +160,7 @@ resource "aws_s3_bucket" "artifact_store" {
 resource "aws_codebuild_project" "terraform_project" {
   name          = "TerraformProject"
   build_timeout = 5
+}
 
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
