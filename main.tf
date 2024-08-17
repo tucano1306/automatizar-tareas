@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_iam_role" "tareas_ec2_rol" {
-  name = "pipeline_tareaec2_1306"
+  name = "tareas_ec2_rol"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
