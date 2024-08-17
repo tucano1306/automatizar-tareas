@@ -11,9 +11,5 @@ variable "create_roles" {
   description = "Whether to create IAM roles"
   default     = false
 }
-variable "github_oauth_token" {
-  description = "GitHub OAuth token for accessing the repository"
-  type        = string
-}
 
 
