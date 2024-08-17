@@ -105,5 +105,82 @@ resource "aws_iam_role_policy_attachment" "codebuild_administrator_access" {
   role       = aws_iam_role.codebuild_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
+
+resource "aws_codepipeline" "example_pipeline" {
+  name     = "example-pipeline"
+  role_arn = aws_iam_role.codebuild_role.arn
+
+  artifact_store {
+    location = aws_s3_bucket.artifact_store.bucket
+    type     = "S3"
+  }
+
+  stage {
+    name = "Source"
+
+    action {
+      name             = "GitHub_Source"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "1"
+      output_artifacts = ["source_output"]
+
+      configuration = {
+        Owner      = "tucano1306"
+        Repo       = "automatizar-tareas"
+        Branch     = "main"
+        OAuthToken = var.github_oauth_token
+      }
+    }
+  }
+
+  stage {
+    name = "Deploy"
+
+    action {
+      name             = "Deploy_Terraform"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["build_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.terraform_project.name
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket" "artifact_store" {
+  bucket = "codepipeline-artifact-store-example"
+}
+
+resource "aws_codebuild_project" "terraform_project" {
+  name          = "TerraformProject"
+  build_timeout = 5
+
+  environment {
+    compute_type = "BUILD_GENERAL1_SMALL"
+    image        = "aws/codebuild/standard:5.0"
+    type         = "LINUX_CONTAINER"
+
+    environment_variable {
+      name  = "TF_VAR_example"
+      value = "example_value"
+    }
+  }
+
+  service_role = aws_iam_role.codebuild_role.arn
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec.yml"
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
  
 
