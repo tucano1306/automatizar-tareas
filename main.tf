@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.aws_region
+}
+
 resource "aws_iam_role" "tareas_ec2_rol" {
   name = "tareas_ec2_rol"
 
