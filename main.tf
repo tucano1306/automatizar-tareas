@@ -26,7 +26,7 @@ resource "aws_iam_role" "tareas_ec2_rol" {
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_policy" {
   count      = var.create_roles ? 1 : 0
-  role       = aws_iam_role.tareas_ec2_rol[0].name
+  role       = aws_iam_role.tareas_ec2_rol.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
