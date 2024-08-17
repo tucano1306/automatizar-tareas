@@ -3,7 +3,8 @@ provider "aws" {
 }
 
 resource "aws_iam_role" "tareas_ec2_rol" {
-  name = "tareas_ec2_rol"
+  count = var.create_roles ? 1 : 0
+  name  = "tareas_ec2_rol"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -17,16 +18,22 @@ resource "aws_iam_role" "tareas_ec2_rol" {
       }
     ]
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_policy" {
-  role       = aws_iam_role.tareas_ec2_rol.name
+  count      = var.create_roles ? 1 : 0
+  role       = aws_iam_role.tareas_ec2_rol[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_iam_role_policy" "lambda_ec2_policy" {
-  name = "lambda_ec2_policy"
-  role = aws_iam_role.tareas_ec2_rol.id
+  count = var.create_roles ? 1 : 0
+  name  = "lambda_ec2_policy"
+  role  = aws_iam_role.tareas_ec2_rol[0].id
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -47,7 +54,7 @@ resource "aws_iam_role_policy" "lambda_ec2_policy" {
 resource "aws_lambda_function" "funcion_ec2_tarea" {
   filename         = "lambda_function_payload.zip"
   function_name    = "funcion_ec2_tarea"
-  role             = aws_iam_role.tareas_ec2_rol.arn
+  role             = aws_iam_role.tareas_ec2_rol[0].arn
   handler          = "lambda_function.lambda_handler"
   source_code_hash = filebase64sha256("lambda_function_payload.zip")
   runtime          = "python3.9"
@@ -74,7 +81,8 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 }
 
 resource "aws_iam_role" "codebuild_role" {
-  name = "pipeline_ec2_tarea"
+  count = var.create_roles ? 1 : 0
+  name  = "pipeline_ec2_tarea"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -88,10 +96,15 @@ resource "aws_iam_role" "codebuild_role" {
       }
     ]
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "codebuild_administrator_access" {
-  role       = aws_iam_role.codebuild_role.name
+  count      = var.create_roles ? 1 : 0
+  role       = aws_iam_role.codebuild_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
  
