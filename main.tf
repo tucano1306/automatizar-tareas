@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_iam_role" "tareas_ec2_rol" {
-  name = "tareas_ec2_rol"
+  name = "pipeline_tareaec2_1306"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -78,7 +78,7 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 }
 
 resource "aws_iam_role" "codebuild_role" {
-  name = "pipeline_ec2_tarea"
+  name = "pipelineec2_tarea_automatizacion_1306"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
