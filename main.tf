@@ -1,3 +1,23 @@
+variable "aws_region" {
+  description = "The AWS region to deploy resources in"
+  default     = "us-east-1"
+}
+
+variable "schedule_expression" {
+  description = "The schedule expression for the EventBridge rule"
+  default     = "rate(5 minutes)"
+}
+
+variable "create_roles" {
+  description = "Whether to create IAM roles"
+  default     = false
+}
+
+variable "github_oauth_token" {
+  description = "GitHub OAuth token for accessing the repository"
+  type        = string
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -26,14 +46,14 @@ resource "aws_iam_role" "tareas_ec2_rol" {
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_policy" {
   count      = var.create_roles ? 1 : 0
-  role       = aws_iam_role.tareas_ec2_rol.name
+  role       = aws_iam_role.tareas_ec2_rol[count.index].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_iam_role_policy" "lambda_ec2_policy" {
   count = var.create_roles ? 1 : 0
   name  = "lambda_ec2_policy"
-  role  = aws_iam_role.tareas_ec2_rol[0].id
+  role  = aws_iam_role.tareas_ec2_rol[count.index].id
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -81,18 +101,17 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 }
 
 resource "aws_iam_role" "codebuild_role" {
-  count = var.create_roles ? 1 : 0
-  name  = "pipeline_ec2_tarea"
+  name = "pipeline_ec2_tarea"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action = "sts:AssumeRole",
         Effect = "Allow",
         Principal = {
           Service = "codebuild.amazonaws.com"
-        }
+        },
+        Action = "sts:AssumeRole"
       }
     ]
   })
@@ -103,9 +122,86 @@ resource "aws_iam_role" "codebuild_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "codebuild_administrator_access" {
-  count      = var.create_roles ? 1 : 0
-  role       = aws_iam_role.codebuild_role[0].name
+  role       = aws_iam_role.codebuild_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+resource "aws_codepipeline" "example_pipeline" {
+  name     = "example-pipeline"
+  role_arn = aws_iam_role.codebuild_role.arn
+
+  artifact_store {
+    location = aws_s3_bucket.artifact_store.bucket
+    type     = "S3"
+  }
+
+  stage {
+    name = "Source"
+
+    action {
+      name             = "GitHub_Source"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "1"
+      output_artifacts = ["source_output"]
+
+      configuration = {
+        Owner      = "tucano1306"
+        Repo       = "automatizar-tareas"
+        Branch     = "main"
+        OAuthToken = var.github_oauth_token
+      }
+    }
+  }
+
+  stage {
+    name = "Deploy"
+
+    action {
+      name             = "Deploy_Terraform"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["build_output"]
+
+      configuration = {
+        ProjectName = aws_codebuild_project.terraform_project.name
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket" "artifact_store" {
+  bucket = "codepipeline-artifact-store-example"
+}
+
+resource "aws_codebuild_project" "terraform_project" {
+  name          = "TerraformProject"
+  build_timeout = 5
+
+  environment {
+    compute_type = "BUILD_GENERAL1_SMALL"
+    image        = "aws/codebuild/standard:5.0"
+    type         = "LINUX_CONTAINER"
+
+    environment_variable {
+      name  = "TF_VAR_example"
+      value = "example_value"
+    }
+  }
+
+  service_role = aws_iam_role.codebuild_role.arn
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec.yml"
+  }
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
 }
 
         
