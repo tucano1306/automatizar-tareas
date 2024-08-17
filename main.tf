@@ -81,18 +81,17 @@ resource "aws_lambda_permission" "allow_cloudwatch" {
 }
 
 resource "aws_iam_role" "codebuild_role" {
-  count = var.create_roles ? 1 : 0
-  name  = "pipeline_ec2_tarea"
+  name = "pipeline_ec2_tarea"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action = "sts:AssumeRole",
         Effect = "Allow",
         Principal = {
           Service = "codebuild.amazonaws.com"
-        }
+        },
+        Action = "sts:AssumeRole"
       }
     ]
   })
@@ -103,8 +102,7 @@ resource "aws_iam_role" "codebuild_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "codebuild_administrator_access" {
-  count      = var.create_roles ? 1 : 0
-  role       = aws_iam_role.codebuild_role[0].name
+  role       = aws_iam_role.codebuild_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
  
